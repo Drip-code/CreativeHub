@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Profile - CreativeHub</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .profile-container {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .profile-header img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #333;
+    }
+    .profile-info {
+      margin-top: 20px;
+    }
+    .wallet {
+      background: #f4f4f4;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      border: none;
+      background: #222;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    input[type="text"], input[type="number"], input[type="file"] {
+      display: block;
+      width: 100%;
+      margin-top: 5px;
+      padding: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-container">
+    <h2>👤 My Profile</h2>
+    <div class="profile-header">
+      <img id="avatar" src="default.png" alt="Avatar" />
+      <div>
+        <h3 id="username">Username</h3>
+        <p id="bio">Bio goes here...</p>
+      </div>
+    </div>
+
+    <div class="profile-info">
+      <form id="updateProfileForm">
+        <label>Update Bio:</label>
+        <input type="text" name="bio" placeholder="Enter new bio" />
+        <label>Change Avatar:</label>
+        <input type="file" name="avatar" accept="image/*" />
+        <button type="submit">Update Profile</button>
+      </form>
+    </div>
+
+    <div class="wallet">
+      <h4>💰 Wallet</h4>
+      <p>Coins: <span id="coins">0</span></p>
+      <p>Diamonds: <span id="diamonds">0</span></p>
+      <p>USD Balance: $<span id="usd">0.00</span></p>
+
+      <button onclick="convertDiamonds()">Convert Diamonds to USD</button>
+
+      <form id="withdrawForm">
+        <label>Withdraw Amount (USD):</label>
+        <input type="number" name="amount" required />
+        <label>Withdraw To (PayPal Email or Bank Info):</label>
+        <input type="text" name="account" required />
+        <button type="submit">Request Withdrawal</button>
+      </form>
+    </div>
+
+    <div class="followers">
+      <h4>👥 Followers</h4>
+      <ul id="followersList"></ul>
+      <h4>➡ Following</h4>
+      <ul id="followingList"></ul>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token");
+
+    async function loadProfile() {
+      const res = await fetch('/api/user/me', {
+        headers: { Authorization: token }
+      });
+      const data = await res.json();
+
+      document.getElementById('avatar').src = '/avatars/' + (data.avatar || 'default.png');
+      document.getElementById('username').innerText = data.username;
+      document.getElementById('bio').innerText = data.bio;
+      document.getElementById('coins').innerText = data.coins;
+      document.getElementById('diamonds').innerText = data.diamonds;
+      document.getElementById('usd').innerText = data.usdBalance.toFixed(2);
+
+      const followersList = document.getElementById('followersList');
+      followersList.innerHTML = data.followers.map(u => <li>${u.username}</li>).join('');
+
+      const followingList = document.getElementById('followingList');
+      followingList.innerHTML = data.following.map(u => <li>${u.username}</li>).join('');
+    }
+
+    document.getElementById('updateProfileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: { Authorization: token },
+        body: formData
+      });
+
+      const data = await res.json();
+      alert(data.message);
+      loadProfile();
+    });
+
+    async function convertDiamonds() {
+      const res = await fetch('/api/convert-diamonds', {
+        method: 'POST',
+        headers: { Authorization: token }
+      });
+      const data = await res.json();
+      alert("Converted: $" + data.usd.toFixed(2));
+      loadProfile();
+    }
+
+    document.getElementById('withdrawForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const payload = {
+        amount: parseFloat(form.amount.value),
+        method: 'manual',
+        account: form.account.value
+      };
+
+      const res = await fetch('/api/withdraw', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      alert(data.message);
+      loadProfile();
+    });
+
+    loadProfile();
+  </script>
+</body>
+</html>

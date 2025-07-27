@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CreativeHub</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>🎬 CreativeHub</h1>
+    <nav>
+      <a href="/login">Login</a>
+      <a href="/register">Register</a>
+    </nav>
+  </header>
+
+  <main>
+    <form id="uploadForm" enctype="multipart/form-data">
+      <h2>Upload Your Video</h2>
+      <input type="file" name="video" accept="video/*" required />
+      <input type="text" name="title" placeholder="Video Title" required />
+      <button type="submit">Upload</button>
+    </form>
+
+    <div id="videoFeed"></div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

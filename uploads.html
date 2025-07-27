@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Upload Video - CreativeHub</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h2>📤 Upload Your Creative Video</h2>
+    <form id="uploadForm">
+      <label for="video">Choose a video:</label>
+      <input type="file" id="video" name="video" accept="video/*" required />
+
+      <label for="caption">Caption:</label>
+      <input type="text" id="caption" name="caption" required />
+
+      <label for="music">Background Music (optional):</label>
+      <input type="file" id="music" name="music" accept="audio/*" />
+
+      <button type="submit">Upload</button>
+    </form>
+    <div id="message"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const message = document.getElementById('message');
+    const token = localStorage.getItem('token');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      const res = await fetch('/api/videos/upload', {
+        method: 'POST',
+        headers: { Authorization: token },
+        body: formData
+      });
+
+      const data = await res.json();
+      message.innerText = data.message || "Upload complete!";
+    });
+  </script>
+</body>
+</html>
